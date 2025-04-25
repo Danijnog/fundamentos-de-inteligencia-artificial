@@ -21,5 +21,9 @@ pip install -r requirements.txt
 
 python TP1/main.py
 
+ou para gerar um puzzle com dados randomicos: 
+
+python TP1/main.py --random 
+
 ## Dependências
 - numpy
