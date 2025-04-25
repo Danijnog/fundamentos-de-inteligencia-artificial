@@ -16,13 +16,23 @@ class Board:
         self.cols = COLS
         self.board = np.zeros(shape=(self.rows, self.cols), dtype=int)
 
-    def init_board(self):
+    def init_board(self, initial_state=None):
         """
-        Inicializa o tabuleiro com números de 0 a 15.
+        Inicializa o tabuleiro.
+        - Se `initial_state` for fornecido, usa-o como estado inicial.
+        - Caso contrário, gera um tabuleiro aleatório.
         """
-        numbers = list(range(0, self.rows * self.cols))
-        np.random.shuffle(numbers)
-        self.board = np.array(numbers).reshape(self.rows, self.cols)
+        if initial_state:
+            # Usa o estado inicial fornecido
+            self.board = np.array(initial_state).reshape(self.rows, self.cols)
+            self.check_is_solvable()
+            if not self.check_is_solvable():
+                raise ValueError("O tabuleiro inicial não é solucionável.")
+        else:
+            # Gera um tabuleiro aleatório
+            numbers = list(range(0, self.rows * self.cols))
+            np.random.shuffle(numbers)
+            self.board = np.array(numbers).reshape(self.rows, self.cols)
 
     def check_is_solvable(self):
         """
@@ -76,46 +86,14 @@ class Board:
 
         return neighbors
 
-    def bfs(self, initial_state):
+    def misplaced_tiles(self, state, goal_state):
         """
-        Breadth-First-Search to solve the 15 puzzle.
-
-        1. Começa no estado inicial (puzzle em uma configuração aleatória)
-        2. Coloca o estado inicial na fila
-        3. Retira o estado da fila
-        4. Veja se é solução
-        5. Se não for solução, gere os vizinhos possíveis (movimentos do 0)
-        6. Adicione os vizinhos na fila
-        7. Veja se é solução (se não for, repete desde o passo 3)
+        Conta o número de peças fora do lugar.
         """
-        initial_state = initial_state.flatten().tolist()
-        goal_state = list(range(1, self.rows * self.cols)) + [0]
-        queue = deque()
-        visited = set()
-
-        queue.append((initial_state, []))
-
-        while queue:
-            current_state, path = queue.popleft()
-            state_tuple = tuple(current_state)
-
-            if state_tuple in visited:
-                continue
-            visited.add(state_tuple)
-
-            if current_state == goal_state:
-                return path + [current_state]
-
-            for neighbors in self.get_neighbors(current_state):
-                if tuple(neighbors) not in visited:
-                    queue.append((neighbors, path + [current_state]))
-        return None
-
-
-board1 = Board()
-board1.init_board()
-print(board1.board)
-if board1.check_is_solvable():
-    print(board1.bfs(board1.board))
-
-# print(board1.get_neighbors(board1.board))
+        return np.sum(state != goal_state) - 1  # Ignora o 0
+    
+    def cost(self, path):
+        """
+        Calcula o custo acumulado (g(n)) com base no número de movimentos realizados.
+        """
+        return len(path)
