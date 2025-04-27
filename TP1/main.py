@@ -108,9 +108,9 @@ if __name__ == "__main__":
         # Inicializa o tabuleiro
         board = Board()
         while True:
-            if args.simple is not None:
-                board.init_board(simple=True, num_moves=args.simple)
-            elif args.random:
+            if args.s is not None:
+                board.init_board(simple=True, num_moves=args.s)
+            elif args.r:
                 board.init_board()  # Gera um tabuleiro aleatório
             else:
                 # Define um tabuleiro fixo para testes

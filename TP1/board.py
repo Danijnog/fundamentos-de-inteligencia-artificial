@@ -122,3 +122,11 @@ class Board:
         if not self.check_is_solvable():
             print("Tabuleiro gerado não é solucionável. Gerando novamente.")
             self.generate_simple_board(num_moves=num_moves)
+
+    def misplaced_tiles(self, state, goal_state):
+        """
+        Calcula o número de peças fora do lugar em relação ao estado objetivo.
+        """
+        state = np.array(state).flatten()
+        goal_state = np.array(goal_state).flatten()
+        return np.sum((state != goal_state) & (goal_state != 0))
