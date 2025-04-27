@@ -16,13 +16,34 @@ class Board:
         self.cols = COLS
         self.board = np.zeros(shape=(self.rows, self.cols), dtype=int)
 
-    def init_board(self):
+    def init_board(self, initial_state=None, simple=False, num_moves=10):
         """
-        Inicializa o tabuleiro com números de 0 a 15.
+        Inicializa o tabuleiro.
+        - Se `initial_state` for fornecido, usa-o como estado inicial.
+        - Se `simple` for True, gera um tabuleiro simples com poucos movimentos.
+        - Caso contrário, gera um tabuleiro aleatório.
         """
-        numbers = list(range(0, self.rows * self.cols))
-        np.random.shuffle(numbers)
-        self.board = np.array(numbers).reshape(self.rows, self.cols)
+        goal_state = list(range(1, self.rows * self.cols)) + [0]
+
+        if initial_state:
+            # Usa o estado inicial fornecido
+            self.board = np.array(initial_state).reshape(self.rows, self.cols)
+            if not self.check_is_solvable():
+                raise ValueError("O tabuleiro inicial não é solucionável.")
+        elif simple:
+            # Gera um tabuleiro simples
+            while True:
+                self.generate_simple_board(num_moves=num_moves)
+                if not np.array_equal(self.board.flatten(), goal_state):
+                    break
+        else:
+            # Gera um tabuleiro aleatório
+            while True:
+                numbers = list(range(0, self.rows * self.cols))
+                np.random.shuffle(numbers)
+                self.board = np.array(numbers).reshape(self.rows, self.cols)
+                if not np.array_equal(self.board.flatten(), goal_state) and self.check_is_solvable():
+                    break
 
     def check_is_solvable(self):
         """
@@ -43,8 +64,8 @@ class Board:
         blank_tile_row, _ = np.where(self.board == 0)
 
         blank_tile_row_from_bottom = self.rows - blank_tile_row[0]
-        print("Index do número 0:", blank_tile_row_from_bottom)
-        print("Paridade:", inversions)
+        # print("Index do número 0:", blank_tile_row_from_bottom)
+        # print("Paridade:", inversions)
 
         if blank_tile_row_from_bottom % 2 != 0:
             return inversions % 2 == 0
@@ -75,47 +96,29 @@ class Board:
                 neighbors.append(new_state.flatten().tolist())
 
         return neighbors
-
-    def bfs(self, initial_state):
+    
+    def cost(self, path):
         """
-        Breadth-First-Search to solve the 15 puzzle.
-
-        1. Começa no estado inicial (puzzle em uma configuração aleatória)
-        2. Coloca o estado inicial na fila
-        3. Retira o estado da fila
-        4. Veja se é solução
-        5. Se não for solução, gere os vizinhos possíveis (movimentos do 0)
-        6. Adicione os vizinhos na fila
-        7. Veja se é solução (se não for, repete desde o passo 3)
+        Calcula o custo acumulado (g(n)) com base no número de movimentos realizados.
         """
-        initial_state = initial_state.flatten().tolist()
+        return len(path)
+
+    def generate_simple_board(self, num_moves=10):
+        """
+        Gera um tabuleiro solucionável aplicando um número limitado de movimentos
+        a partir do estado objetivo.
+        - `num_moves`: Número de movimentos aleatórios para embaralhar o tabuleiro.
+        """
+        # Começa com o estado objetivo
         goal_state = list(range(1, self.rows * self.cols)) + [0]
-        queue = deque()
-        visited = set()
+        self.board = np.array(goal_state).reshape(self.rows, self.cols)
 
-        queue.append((initial_state, []))
+        # Aplica movimentos aleatórios
+        for _ in range(num_moves):
+            neighbors = self.get_neighbors(self.board.flatten().tolist())
+            self.board = np.array(neighbors[np.random.choice(len(neighbors))]).reshape(self.rows, self.cols)
 
-        while queue:
-            current_state, path = queue.popleft()
-            state_tuple = tuple(current_state)
-
-            if state_tuple in visited:
-                continue
-            visited.add(state_tuple)
-
-            if current_state == goal_state:
-                return path + [current_state]
-
-            for neighbors in self.get_neighbors(current_state):
-                if tuple(neighbors) not in visited:
-                    queue.append((neighbors, path + [current_state]))
-        return None
-
-
-board1 = Board()
-board1.init_board()
-print(board1.board)
-if board1.check_is_solvable():
-    print(board1.bfs(board1.board))
-
-# print(board1.get_neighbors(board1.board))
+        # Verifica se o tabuleiro gerado é solucionável
+        if not self.check_is_solvable():
+            print("Tabuleiro gerado não é solucionável. Gerando novamente.")
+            self.generate_simple_board(num_moves=num_moves)
