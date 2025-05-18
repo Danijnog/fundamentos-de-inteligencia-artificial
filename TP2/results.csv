@@ -1,0 +1,6 @@
+,Configuração,Tamanho_População,Taxa_Mutação,Tamanho_Torneio,Fitness_Final,Gerações_Convergência
+0,Padrão,100,0.5,3,0.12007981325415415,100.0
+1,Alta taxa de mut.,100,0.9,3,0.3682899457811684,100.0
+2,Baixa taxa de mut.,100,0.1,3,0.0004118170904909106,100.0
+3,Pop. Pequena,20,0.5,3,0.15640987762224273,100.0
+4,Pop. Grande,300,0.5,3,0.1073178146572878,100.0
